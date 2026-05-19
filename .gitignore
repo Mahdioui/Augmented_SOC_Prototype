@@ -1,0 +1,23 @@
+﻿# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.venvtest/
+venv/
+.env
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Generated outputs (optional: keep if you want to version results)
+outputs/
+visuals/
+reports/
+feedback/
+
+# Logs
+*.log

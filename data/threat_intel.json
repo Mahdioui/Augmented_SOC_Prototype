@@ -1,0 +1,110 @@
+{
+  "known_malicious_ips": [
+    {
+      "ip": "185.220.101.42",
+      "reputation": "malicious",
+      "category": "tor_exit_node",
+      "threat_actor": "unknown",
+      "first_seen": "2022-03-01",
+      "last_seen": "2024-01-14",
+      "confidence": 0.97,
+      "source": "AbuseIPDB_MOCK"
+    },
+    {
+      "ip": "91.108.4.180",
+      "reputation": "malicious",
+      "category": "phishing_infrastructure",
+      "threat_actor": "TA-PHANTOMBANK",
+      "first_seen": "2023-04-15",
+      "last_seen": "2024-01-15",
+      "confidence": 0.92,
+      "source": "ThreatFox_MOCK"
+    },
+    {
+      "ip": "203.0.113.55",
+      "reputation": "malicious",
+      "category": "c2_server",
+      "threat_actor": "LOCKBIT_AFFILIATE",
+      "first_seen": "2023-11-20",
+      "last_seen": "2024-01-13",
+      "confidence": 0.99,
+      "source": "VirusTotal_MOCK"
+    }
+  ],
+  "known_malicious_domains": [
+    {
+      "domain": "bank-secure.xyz",
+      "category": "phishing",
+      "target_sector": "banking",
+      "threat_actor": "TA-PHANTOMBANK",
+      "first_seen": "2023-12-01",
+      "confidence": 0.95,
+      "source": "PhishTank_MOCK"
+    },
+    {
+      "domain": "it-helpdesk-portal.ru",
+      "category": "phishing",
+      "target_sector": "enterprise",
+      "threat_actor": "unknown",
+      "first_seen": "2024-01-10",
+      "confidence": 0.88,
+      "source": "URLhaus_MOCK"
+    },
+    {
+      "domain": "c2-server-malicious.net",
+      "category": "c2",
+      "target_sector": "financial",
+      "threat_actor": "LOCKBIT_AFFILIATE",
+      "first_seen": "2023-11-20",
+      "confidence": 0.99,
+      "source": "VirusTotal_MOCK"
+    },
+    {
+      "domain": "dropbox-upload-srv.xyz",
+      "category": "exfiltration_staging",
+      "target_sector": "any",
+      "threat_actor": "unknown",
+      "first_seen": "2023-10-05",
+      "confidence": 0.75,
+      "source": "InternalTI_MOCK"
+    }
+  ],
+  "known_malicious_hashes": [
+    {
+      "hash": "5d41402abc4b2a76b9719d911017c592",
+      "malware_family": "LockBit_3.0",
+      "category": "ransomware",
+      "threat_actor": "LOCKBIT_AFFILIATE",
+      "first_seen": "2023-10-01",
+      "confidence": 0.99,
+      "source": "VirusTotal_MOCK"
+    },
+    {
+      "hash": "aab3238922bcc25a6f606eb525ffdc56",
+      "malware_family": "LockBit_3.0_dropper",
+      "category": "ransomware_dropper",
+      "threat_actor": "LOCKBIT_AFFILIATE",
+      "first_seen": "2023-10-01",
+      "confidence": 0.97,
+      "source": "MalwareBazaar_MOCK"
+    }
+  ],
+  "threat_actors": {
+    "TA-PHANTOMBANK": {
+      "name": "TA-PHANTOMBANK",
+      "motivation": "financial",
+      "target_sectors": ["banking", "insurance", "fintech"],
+      "ttps": ["phishing", "credential_harvesting", "BEC"],
+      "active": true,
+      "severity": "high"
+    },
+    "LOCKBIT_AFFILIATE": {
+      "name": "LOCKBIT_AFFILIATE",
+      "motivation": "financial_ransomware",
+      "target_sectors": ["all"],
+      "ttps": ["ransomware", "data_exfiltration", "double_extortion"],
+      "active": true,
+      "severity": "critical"
+    }
+  }
+}

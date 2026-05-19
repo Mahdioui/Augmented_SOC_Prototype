@@ -1,0 +1,50 @@
+[
+  {
+    "case_id": "INC-2023-087",
+    "title": "Privileged Account Brute Force - LDAP Server",
+    "type": "brute_force",
+    "status": "closed",
+    "severity": "high",
+    "affected_user_ids": ["USR-003"],
+    "affected_asset_ids": ["AST-002"],
+    "source_ips": ["185.220.101.11"],
+    "opened_date": "2023-08-14",
+    "closed_date": "2023-08-15",
+    "resolution": "Source IP blocked at firewall. Password reset enforced. MFA re-enrolled.",
+    "analyst_notes": "Attack originated from Tor exit node. No successful authentication confirmed.",
+    "false_positive": false,
+    "ttr_hours": 4.5
+  },
+  {
+    "case_id": "INC-2024-003",
+    "title": "Suspicious Login - Risk Management User",
+    "type": "suspicious_login",
+    "status": "closed",
+    "severity": "medium",
+    "affected_user_ids": ["USR-009"],
+    "affected_asset_ids": ["AST-006"],
+    "source_ips": ["102.90.44.10"],
+    "opened_date": "2024-01-05",
+    "closed_date": "2024-01-05",
+    "resolution": "User confirmed travel to Nigeria for business meeting. Login verified as legitimate.",
+    "analyst_notes": "False positive - user was traveling. Travel policy notification process to be improved.",
+    "false_positive": true,
+    "ttr_hours": 1.5
+  },
+  {
+    "case_id": "INC-2023-044",
+    "title": "Phishing Campaign - Finance Department",
+    "type": "phishing",
+    "status": "closed",
+    "severity": "high",
+    "affected_user_ids": ["USR-005", "USR-008", "USR-011"],
+    "affected_asset_ids": ["AST-003"],
+    "source_ips": ["91.108.4.170"],
+    "opened_date": "2023-05-20",
+    "closed_date": "2023-05-22",
+    "resolution": "Malicious domain blocked. 3 users had credentials harvested. Passwords reset. Awareness training conducted.",
+    "analyst_notes": "Highly targeted spear-phishing. Attackers had knowledge of internal project names.",
+    "false_positive": false,
+    "ttr_hours": 18.0
+  }
+]
