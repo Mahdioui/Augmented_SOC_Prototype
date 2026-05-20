@@ -21,3 +21,7 @@ feedback/
 
 # Logs
 *.log
+audit_trail.jsonl
+
+# Local state
+data/prototype_state.db
