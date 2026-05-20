@@ -1,207 +1,217 @@
-# Agentic SOC Prototype (Governed Upgrade)
+# Augmented SOC Prototype (PFE Chapter 6 Alignment)
 
-Thesis-oriented prototype for a banking SOC that demonstrates **AI-assisted, policy-governed, human-supervised** operations.
+Prototype SOC bancaire **AI-assisted** avec gouvernance explicite, orchestration graphe d’états, validation de schémas, auditabilité et simulation.
 
-This system is intentionally **not** fully autonomous.
+> Ce projet est un **prototype académique**, pas un SOC de production.
+> Aucune action destructive ou autonome n’est exécutée.
 
-## Architecture (Upgraded)
+## Positionnement
 
-`RawAlert -> EnrichmentAgent -> TriageAgent -> (PhishingAgent) -> FalsePositivePredictionAgent -> NextBestActionAgent -> SummarizationAgent -> PolicyEngine -> AuditLogger -> Persistence/Reports`
+- Mode principal: **AI-assisted / human-supervised**
+- Données: **synthétiques / anonymisées uniquement**
+- Objectif: démontrer une architecture crédible de SOC augmenté par l’IA dans un cadre PFE
 
-## What Exists Now
+## Stack technique
 
-- Central orchestrator with modular bounded agents.
-- Specialized phishing analysis (conditional).
-- New false-positive prediction support (bounded, explainable).
-- New next-best-action recommendation layer (bounded vocabulary, recommendation-only).
-- Expanded policy engine with richer, explicit reasoning output.
-- Full persistence of orchestrator outputs to `outputs/`.
-- Human feedback capture to `feedback/`.
-- Expanded scenario library with scenario metadata.
-- Deterministic multi-mode simulation (manual vs assisted vs governed).
-- Visual artifacts (`matplotlib`) and report exports (`CSV`, `JSON`, `Markdown`).
+- Python 3.11 (cible)
+- Pydantic (schémas I/O)
+- FastAPI + Uvicorn (exposition API)
+- LangGraph (orchestration d’état)
+- JSONL (audit trail append-only)
+- SQLite (index léger des runs)
+- Matplotlib (visualisations)
+- LLM configurable:
+  - `LLM_PROVIDER=mock` (défaut, déterministe)
+  - `LLM_PROVIDER=openai` (optionnel, nécessite `OPENAI_API_KEY`)
 
-## Folder Structure
+## Architecture (réelle)
+
+`ingest_alert -> enrich_alert -> triage_alert -> route_specialized_agent -> (phishing_triage | identity_investigation) -> summarize_case -> policy_check -> human_validation_stub -> audit_and_persist`
+
+### Agents principaux (alignés rapport)
+1. `EnrichmentAgent`
+2. `AlertTriageAgent`
+3. `CaseSummaryAgent`
+4. `PhishingTriageAgent`
+5. `IdentityInvestigationAgent`
+
+### Composants d’aide optionnels
+- `FalsePositivePredictionAgent`
+- `NextBestActionAgent`
+
+## Arborescence
 
 ```text
 soc-agentic-prototype/
 ├── agents/
 │   ├── enrichment_agent.py
-│   ├── triage_agent.py
-│   ├── phishing_agent.py
+│   ├── alert_triage_agent.py
+│   ├── case_summary_agent.py
+│   ├── phishing_triage_agent.py
+│   ├── identity_investigation_agent.py
 │   ├── false_positive_prediction_agent.py
-│   ├── next_best_action_agent.py
-│   └── summarization_agent.py
+│   └── next_best_action_agent.py
 ├── orchestration/
-│   ├── orchestrator.py
+│   ├── langgraph_graph.py
+│   ├── routing.py
+│   ├── state.py
+│   ├── runner.py
+│   └── orchestrator.py
+├── governance/
 │   ├── policy_engine.py
+│   ├── action_registry.yaml
 │   └── audit_logger.py
+├── connectors/
+│   ├── siem_stub.py
+│   ├── iam_stub.py
+│   ├── cmdb_stub.py
+│   ├── threat_intel_stub.py
+│   └── ticketing_stub.py
 ├── schemas/
+│   ├── alert_schema.py
+│   ├── agent_output_schema.py
+│   ├── audit_schema.py
+│   ├── workflow_schema.py
 │   ├── input_schema.py
-│   ├── output_schema.py
-│   ├── scenario_schema.py
-│   └── feedback_schema.py
+│   └── output_schema.py
+├── llm/
+│   ├── llm_client.py
+│   ├── openai_client.py
+│   └── mock_llm_client.py
+├── rag/
+│   ├── knowledge_base.py
+│   └── retriever.py
+├── api/
+│   └── main.py
+├── simulations/
+│   ├── scenario_library.py
+│   └── run_before_after.py
 ├── persistence/
+│   ├── sqlite_store.py
 │   └── result_store.py
 ├── reporting/
 │   ├── batch_reporter.py
 │   └── run_reporter.py
-├── feedback/
-│   └── feedback_manager.py
-├── visualization/
-│   └── simulation_plots.py
-├── simulations/
-│   ├── scenario_library.py
-│   └── run_before_after.py
-├── data/
-├── prompts/
-├── outputs/            # generated
-├── reports/            # generated
-├── visuals/            # generated
+├── docs/
+│   ├── architecture_gap_analysis.md
+│   └── report_alignment.md
+├── scripts/
+│   └── non_regression_check.py
+├── outputs/
+├── reports/
+├── visuals/
 ├── app.py
-└── requirements.txt
+├── requirements.txt
+└── README.md
 ```
 
-## Install
+## Installation
 
 ```bash
-cd soc-agentic-prototype
 python -m venv .venv
-.venv\Scripts\activate    # Windows
+.venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Dependencies:
-- `pydantic>=2.5.0`
-- `matplotlib>=3.8.0`
-
-## Run Commands
+## Exécution CLI
 
 ```bash
-# list scenarios with expected behavior metadata
+# lister les scénarios
 python app.py --list
 
-# run one scenario
-python app.py --scenario ransomware_critical_asset
+# exécuter un scénario (mode auto: langgraph si dispo, sinon python)
+python app.py --scenario phishing_finance_user --mode auto
 
-# run all scenarios
-python app.py --all-scenarios
+# forcer orchestrateur python
+python app.py --scenario phishing_finance_user --mode python
 
-# run all scenarios + aggregate thesis-ready batch artifacts
-python app.py --batch-report
+# forcer orchestrateur langgraph
+python app.py --scenario phishing_finance_user --mode langgraph
 
-# run simulation suite + charts + csv/json/md exports
+# exécuter tous les scénarios
+python app.py --all-scenarios --mode langgraph
+
+# simulation before/after + artefacts
 python app.py --simulation
 
-# capture human feedback interactively
-python app.py --feedback --alert-id ALT-101 --scenario ransomware_critical_asset
+# batch report multi-scénarios
+python app.py --batch-report
 
-# run a scenario without persisting output files
-python app.py --scenario ransomware_critical_asset --no-save-output
+# capture feedback humain
+python app.py --feedback --alert-id ALT-102 --scenario phishing_finance_user
 ```
 
-## Output Artifacts
+## Exposition API
 
-Per scenario run:
-- `outputs/<ALERT_ID>_orchestrator_result.json`
-- `outputs/<ALERT_ID>_case_summary.txt`
-- `outputs/<ALERT_ID>_case_summary.md`
-- `reports/<ALERT_ID>_run_summary.md`
-- `reports/latest_run_summary.md`
-- `reports/architecture_diagram.mmd`
+```bash
+uvicorn api.main:app --reload
+```
 
-Batch report run:
-- `outputs/batch_<run_id>/scenario_comparison_matrix.csv`
-- `outputs/batch_<run_id>/scenario_comparison_matrix.json`
-- `outputs/batch_<run_id>/scenario_comparison_matrix.md`
-- `reports/batch_<run_id>_summary.md`
-- `reports/latest_batch_summary.md`
-- `visuals/batch_<run_id>/*.png`
+Endpoints:
+- `GET /health`
+- `GET /scenarios`
+- `POST /alerts/process`
+- `POST /simulation/run`
+- `GET /reports/latest`
 
-Simulation run:
-- `outputs/simulation_<run_id>/simulation_summary.csv`
-- `outputs/simulation_<run_id>/simulation_summary.json`
-- `outputs/simulation_<run_id>/simulation_summary.md`
-- `visuals/<run_id>/*.png`
-- `reports/simulation_<run_id>.md`
-- `reports/latest_simulation_summary.md`
+## Gouvernance (YAML + policy engine)
 
-## Policy Output Model (Richer)
+Le fichier `governance/action_registry.yaml` décrit chaque action:
+- `risk_level`
+- `allowed_in_prototype`
+- `requires_human_approval`
+- `required_role`
+- `reversible`
+- `description`
 
-The policy engine now returns explicit, thesis-friendly decision structure:
-- `policy_id`, `policy_description`
-- `decision` (`allowed` / `review_required` / `denied`)
-- `decision_severity` (`low` / `medium` / `high` / `critical`)
-- `triggered_rules`
-- `triggered_conditions`
-- `decision_rationale`
-- `approval_role_required`
-- `review_notes`
-- `policy_reasoning_summary`
+Décisions possibles:
+- `ALLOW`
+- `REQUIRE_APPROVAL`
+- `BLOCK`
+- `ESCALATE`
 
-This makes governance decisions auditable and easy to explain in defense slides and appendices.
+Les actions sensibles (`block_ip`, `isolate_endpoint`, `disable_user_account`) restent bloquées ou soumises à approbation.
 
-Feedback:
-- `feedback/<ALERT_ID>_feedback.json`
+## Audit
 
-## Governance Model
+Audit JSONL append-only (`audit_trail.jsonl`) avec:
+- `request_id`, `case_id`, `timestamp_utc`
+- `agent`, `model_id`, `prompt_version`
+- `sources`, `tools_called`
+- `proposed_action`, `confidence`
+- `policy_decision`, `human_validation`, `final_outcome`
 
-- No destructive actions executed.
-- No automated containment execution.
-- Sensitive actions are recommendation-only and policy-reviewed.
-- Critical/privileged/strong-IOC contexts force review-oriented behavior.
-- High false-positive estimates **cannot** auto-dismiss high-risk alerts.
-- Full audit trail remains append-only.
+## Simulation
 
-## Explainability Enhancements
+Artefacts générés:
+- `simulation_summary.csv`
+- `simulation_summary.json`
+- `simulation_summary.md`
+- graphiques PNG
 
-Every major output now includes explanation and reasoning summary fields:
-- Triage reasoning.
-- Phishing reasoning.
-- False-positive reasoning.
-- Next-best-action reasoning.
-- Policy rationale with triggered rules + conditions.
-- Final orchestrator consolidated explanation.
+Le mode simulation inclut un paramètre de volume synthétique (par défaut `240` cas: 80/80/80).
+Le rapport simulation inclut explicitement:
 
-## Human-in-the-Loop Feedback
+> “These results are illustrative simulation outputs generated on synthetic/anonymized cases and are not production measurements.”
 
-Feedback capture is intentionally lightweight and structured:
-- analyst agreement/disagreement with triage
-- agreement with false-positive prediction
-- agreement with summary quality
-- agreement with next-best-action recommendations
-- reviewer role, comments, and final review decision
+## Prototype vs Production
 
-Saved as structured JSON in `feedback/` for future governance analysis.
+### Dans ce prototype
+- données synthétiques/anonymisées
+- connecteurs stubs
+- policy déclarative YAML
+- orchestration démonstrative LangGraph
+- LLM mock déterministe par défaut
 
-## Scenario Library (Expanded)
+### En production (hors scope PFE)
+- connecteurs réels SIEM/IAM/CMDB/Ticketing
+- gestion des secrets et IAM durcis
+- contrôle d’accès fort et observabilité complète
+- gouvernance et approbation intégrées aux workflows d’entreprise
 
-Includes realistic banking SOC scenarios such as:
-- Ransomware on critical asset
-- Phishing targeting finance user
-- Suspicious sign-in on privileged account
-- Noisy malware false-positive pattern on non-critical host
-- Benign admin activity misdetected
-- Lateral movement precursor
-- Insider-driven access anomaly
-- Repeated IAM misconfiguration noise
+## Limites assumées
 
-Each scenario carries metadata for thesis analysis:
-- expected triage direction
-- expected policy behavior
-- expected false-positive profile
-- expected escalation tendency
-
-## Limitations (Explicit)
-
-- Simulation metrics are illustrative assumptions.
-- No external SIEM/EDR/IAM integration (mocked data only).
-- No ML training loop, no autonomous remediation.
-- Action recommendations remain analyst-supervised.
-
-## Thesis Positioning
-
-This prototype supports the thesis claim that SOC evolution is **progressive and governed**:
-- AI assistance can reduce noise and improve prioritization.
-- Policy controls and human oversight remain central.
-- Agentic capability is staged, bounded, and auditable.
+- Pas de données bancaires réelles
+- Pas de remédiation autonome
+- Pas de vector DB (RAG simplifié keyword)
+- OpenAI optionnel uniquement pour accélération de prototypage

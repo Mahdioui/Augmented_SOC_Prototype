@@ -37,6 +37,7 @@ logging.basicConfig(
 # Imports
 # ---------------------------------------------------------------------------
 from orchestration.orchestrator import Orchestrator
+from orchestration.runner import run_alert
 from feedback.feedback_manager import FeedbackManager
 from reporting.batch_reporter import run_batch_report
 from simulations.run_before_after import run_simulation
@@ -50,43 +51,52 @@ from simulations.scenario_library import (
 # Demo runner
 # ---------------------------------------------------------------------------
 
-def run_scenario(scenario_name: str, orchestrator: Orchestrator) -> None:
+def run_scenario(
+    scenario_name: str,
+    mode: str = "auto",
+    persist_outputs: bool = True,
+) -> None:
     """Process a single named scenario through the full pipeline."""
     print(f"\n{'#'*68}")
     print(f"  RUNNING SCENARIO: {scenario_name}")
     print(f"{'#'*68}")
 
     alert = get_scenario(scenario_name)
-    result = orchestrator.process_alert(alert)
-    orchestrator.print_result(result)
+    result = run_alert(alert=alert, mode=mode)
+    # Reuse existing rich printer for compatibility
+    printer = Orchestrator(persist_outputs=persist_outputs)
+    printer.print_result(result)
     if result.output_artifacts:
         print("\n OUTPUT ARTIFACTS")
         for key, value in result.output_artifacts.items():
             print(f"   - {key}: {value}")
 
 
-def run_all_scenarios() -> None:
+def run_all_scenarios(mode: str = "auto", no_save_output: bool = False) -> None:
     """Run all demo scenarios sequentially."""
     print(f"\n{'#'*68}")
     print("  AGENTIC SOC PROTOTYPE — FULL DEMO")
     print("  Processing all demo scenarios through the pipeline")
     print(f"{'#'*68}")
 
-    orchestrator = Orchestrator(persist_audit=True)
-
     for name in SCENARIOS.keys():
-        run_scenario(name, orchestrator)
+        run_scenario(
+            name,
+            mode=mode,
+            persist_outputs=not no_save_output,
+        )
         print("\n" + "─" * 68)
 
     print(f"\n[app.py] All {len(SCENARIOS)} scenarios processed.")
     print("[app.py] Outputs persisted under outputs/ and reports/.")
 
 
-def run_batch_reporting(no_save_output: bool = False) -> None:
+def run_batch_reporting(no_save_output: bool = False, mode: str = "auto") -> None:
     print(f"\n{'#'*68}")
     print("  AGENTIC SOC PROTOTYPE — BATCH REPORT MODE")
     print("  Running all scenarios and generating thesis artifacts")
     print(f"{'#'*68}")
+    # batch reporter expects an Orchestrator-compatible object; keep python mode there
     orchestrator = Orchestrator(
         persist_audit=True,
         persist_outputs=not no_save_output,
@@ -155,6 +165,18 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Disable persistence to outputs/ for this run",
     )
+    parser.add_argument(
+        "--mode",
+        choices=["python", "langgraph", "auto"],
+        default="auto",
+        help="Orchestration mode selection (default: auto).",
+    )
+    parser.add_argument(
+        "--simulation-cases",
+        type=int,
+        default=240,
+        help="Synthetic case volume for simulation mode (default: 240).",
+    )
     return parser
 
 
@@ -173,11 +195,11 @@ def main() -> None:
         return
 
     if args.simulation:
-        run_simulation()
+        run_simulation(total_cases=args.simulation_cases)
         return
 
     if args.batch_report:
-        run_batch_reporting(no_save_output=args.no_save_output)
+        run_batch_reporting(no_save_output=args.no_save_output, mode=args.mode)
         return
 
     if args.feedback:
@@ -192,16 +214,15 @@ def main() -> None:
             print(f"[ERROR] Unknown scenario: '{args.scenario}'")
             print(f"        Available: {list(SCENARIOS.keys())}")
             sys.exit(1)
-        orchestrator = Orchestrator(
-            persist_audit=True,
+        run_scenario(
+            args.scenario,
+            mode=args.mode,
             persist_outputs=not args.no_save_output,
-            save_case_summary_files=True,
         )
-        run_scenario(args.scenario, orchestrator)
         return
 
     if args.all_scenarios:
-        run_all_scenarios()
+        run_all_scenarios(mode=args.mode, no_save_output=args.no_save_output)
         return
 
     # Default: display help

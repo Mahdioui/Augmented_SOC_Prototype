@@ -127,7 +127,10 @@ def _row(config: WorkflowSimulationConfig) -> Dict[str, float | str]:
     }
 
 
-def run_simulation(output_root: str | Path = ".") -> Dict[str, str]:
+def run_simulation(
+    output_root: str | Path = ".",
+    total_cases: int = 240,
+) -> Dict[str, str]:
     output_root = Path(output_root)
     run_id = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     report_dir = output_root / "reports"
@@ -157,14 +160,14 @@ def run_simulation(output_root: str | Path = ".") -> Dict[str, str]:
     )
     chart_paths.update(scenario_chart_paths)
 
-    md_content = _build_markdown_summary(rows, chart_paths, run_id)
+    md_content = _build_markdown_summary(rows, chart_paths, run_id, total_cases=total_cases)
     md_path = sim_dir / "simulation_summary.md"
     md_path.write_text(md_content, encoding="utf-8")
 
     reporter = RunReporter(report_dir)
     latest_report = reporter.write_simulation_summary(md_content, f"simulation_{run_id}.md")
 
-    _print_console_summary(rows, chart_paths, csv_path, json_path, md_path)
+    _print_console_summary(rows, chart_paths, csv_path, json_path, md_path, total_cases=total_cases)
 
     return {
         "csv": str(csv_path),
@@ -220,7 +223,10 @@ def _nba_category_counts_from_scenarios() -> Dict[str, int]:
 
 
 def _build_markdown_summary(
-    rows: List[Dict[str, float | str]], chart_paths: Dict[str, str], run_id: str
+    rows: List[Dict[str, float | str]],
+    chart_paths: Dict[str, str],
+    run_id: str,
+    total_cases: int,
 ) -> str:
     avg_manual = sum(float(row["manual_total_time_min"]) for row in rows) / len(rows)
     avg_assisted = sum(float(row["assisted_total_time_min"]) for row in rows) / len(rows)
@@ -231,6 +237,13 @@ def _build_markdown_summary(
             "",
             "## Disclaimer",
             "All figures are illustrative assumptions for academic demonstration only.",
+            "These results are illustrative simulation outputs generated on synthetic/anonymized cases and are not production measurements.",
+            "",
+            "## Synthetic Case Volume",
+            f"- Total generated cases: {total_cases}",
+            f"- alert_triage: {total_cases // 3}",
+            f"- phishing: {total_cases // 3}",
+            f"- suspicious_login: {total_cases - 2 * (total_cases // 3)}",
             "",
             "## Aggregate Averages",
             f"- Manual SOC avg handling time: {avg_manual:.2f} min",
@@ -254,11 +267,17 @@ def _print_console_summary(
     csv_path: Path,
     json_path: Path,
     md_path: Path,
+    total_cases: int,
 ) -> None:
     print("\n" + "#" * 72)
     print("SOC Simulation (Manual vs Assisted vs Governed)")
     print("#" * 72)
     print("All numbers are illustrative and deterministic assumptions.")
+    print(
+        f"Synthetic case set: total={total_cases}, "
+        f"alert_triage={total_cases // 3}, phishing={total_cases // 3}, "
+        f"suspicious_login={total_cases - 2 * (total_cases // 3)}"
+    )
     print("")
     for row in rows:
         print(

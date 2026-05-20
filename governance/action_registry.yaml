@@ -1,0 +1,71 @@
+actions:
+  summarize_case:
+    risk_level: low
+    allowed_in_prototype: true
+    requires_human_approval: false
+    required_role: analyst
+    reversible: true
+    description: Generate a case summary draft.
+  recommend_priority:
+    risk_level: low
+    allowed_in_prototype: true
+    requires_human_approval: false
+    required_role: analyst
+    reversible: true
+    description: Recommend case priority based on signals.
+  close_as_duplicate:
+    risk_level: medium
+    allowed_in_prototype: true
+    requires_human_approval: true
+    required_role: senior_analyst
+    reversible: true
+    description: Mark a case as duplicate after analyst validation.
+  create_ticket_draft:
+    risk_level: low
+    allowed_in_prototype: true
+    requires_human_approval: false
+    required_role: analyst
+    reversible: true
+    description: Create an internal draft ticket only.
+  send_user_response_draft:
+    risk_level: low
+    allowed_in_prototype: true
+    requires_human_approval: false
+    required_role: analyst
+    reversible: true
+    description: Draft user communication content.
+  block_ip:
+    risk_level: high
+    allowed_in_prototype: false
+    requires_human_approval: true
+    required_role: security_manager
+    reversible: true
+    description: Network block recommendation only in prototype.
+  isolate_endpoint:
+    risk_level: high
+    allowed_in_prototype: false
+    requires_human_approval: true
+    required_role: security_manager
+    reversible: true
+    description: Endpoint isolation recommendation only in prototype.
+  disable_user_account:
+    risk_level: high
+    allowed_in_prototype: false
+    requires_human_approval: true
+    required_role: security_manager
+    reversible: true
+    description: Account disable recommendation only in prototype.
+  escalate_to_t2:
+    risk_level: medium
+    allowed_in_prototype: true
+    requires_human_approval: false
+    required_role: analyst
+    reversible: true
+    description: Escalate to SOC Tier 2.
+  escalate_to_ciso:
+    risk_level: high
+    allowed_in_prototype: true
+    requires_human_approval: true
+    required_role: security_manager
+    reversible: true
+    description: Escalate strategic incident communication to CISO.

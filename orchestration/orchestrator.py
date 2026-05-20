@@ -33,6 +33,7 @@ from agents.triage_agent import TriageAgent
 from orchestration.audit_logger import AuditLogger
 from orchestration.policy_engine import PolicyEngine
 from persistence.result_store import ResultStore
+from persistence.sqlite_store import SQLiteStore
 from reporting.run_reporter import RunReporter
 from schemas.input_schema import AlertType, RawAlert
 from schemas.output_schema import OrchestratorResult
@@ -74,6 +75,7 @@ class Orchestrator:
             save_summary_txt=save_case_summary_files,
             save_summary_md=save_case_summary_files,
         )
+        self.sqlite_store = SQLiteStore()
         self.reporter = RunReporter()
         self.architecture_diagram_path = self.reporter.write_architecture_diagram()
         self.persist_outputs = persist_outputs
@@ -391,6 +393,17 @@ class Orchestrator:
             artifact_paths["run_summary_md"] = summary_path
             artifact_paths["architecture_mermaid"] = self.architecture_diagram_path
             result.output_artifacts = artifact_paths
+
+            self.sqlite_store.insert_run(
+                alert_id=result.alert_id,
+                workflow="python",
+                status=result.pipeline_status,
+                final_decision=(
+                    result.triage_result.classification if result.triage_result else None
+                ),
+                policy_decision=(result.policy_check.decision if result.policy_check else None),
+                output_path=artifact_paths.get("orchestrator_json"),
+            )
 
         return result
 
